@@ -96,6 +96,9 @@ docker login $loginServer -u $username -p $pass
 kubectl create clusterrolebinding kubernetes-dashboard --clusterrole=cluster-admin --serviceaccount=kube-system:kubernetes-dashboard
 az aks browse --resource-group $resourceGroup --name $aksCluster
 
+# Build image
+docker build -t k8app:1 .
+
 # Push to Azure Acr
 docker tag k8app:1 $loginServer/k8app:1
 docker push $loginServer/k8app:1
@@ -122,7 +125,7 @@ kubectl get service k8app -w
 kubectl autoscale deployment k8app --cpu-percent=5 --min=1 --max=10
 
 # Get cluster autoscaler
-kubectl get hpa k8app -w
+kubectl get hpa k8app -o wide -w
 
 # Get k8s service
 $svc=kubectl get services k8app -o json | ConvertFrom-Json
