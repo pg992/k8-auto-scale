@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: k8app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: k8app
+  template:
+    metadata:
+      labels:
+        app: k8app
+    spec:
+      containers:
+      - name: k8app
+        image: k8demos.azurecr.io/k8app:1
+        ports:
+        - containerPort: 80
+          name: http
+          protocol: TCP
+        resources:
+          requests:
+            cpu: 500m
+            memory: 1G
+          limits:
+            cpu: 500m
+            memory: 0.5G
+      imagePullSecrets:
+      - name: regcred
+      nodeSelector:
+        kubernetes.io/role: agent
+        beta.kubernetes.io/os: linux
+        type: virtual-kubelet
+      tolerations:
+      - key: virtual-kubelet.io/provider
+        operator: Exists
+      - key: azure.com/aci
+        effect: NoSchedule
