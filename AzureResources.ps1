@@ -13,7 +13,7 @@ az group create --name $resourceGroup --location WestEurope
 az provider list > test.json
 $obj1=Get-Content .`test.json | ConvertFrom-Json
 $regState=$obj1 | Where-Object -Property namespace -eq Microsoft.ContainerInstance | Select-Object -Property registrationState
-Remove-Item .`test.json
+Remove-Item .\test.json
 
 # If unregistered -register
 if($regState.registrationState -eq 'Unregistered') {
