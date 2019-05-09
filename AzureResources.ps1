@@ -11,9 +11,9 @@ az group create --name $resourceGroup --location WestEurope
 
 # Check if there is acr provider 
 az provider list > test.json
-$obj1=Get-Content .\test.json | ConvertFrom-Json
+$obj1=Get-Content .`test.json | ConvertFrom-Json
 $regState=$obj1 | Where-Object -Property namespace -eq Microsoft.ContainerInstance | Select-Object -Property registrationState
-Remove-Item .\test.json
+Remove-Item .`test.json
 
 # If unregistered -register
 if($regState.registrationState -eq 'Unregistered') {
@@ -107,7 +107,7 @@ docker push $loginServer/k8app:1
 kubectl create secret docker-registry regcred --docker-server=$loginServer --docker-username=$username --docker-password=$pass --docker-email=$email
 
 # Apply deployment
-kubectl apply -f .\deployment.yaml
+kubectl apply -f .`deployment.yaml
 
 # Get pods
 kubectl get pods -w
@@ -120,6 +120,10 @@ kubectl edit service/k8app
 
 # Get service (Wait for public ip to be exposed)
 kubectl get service k8app -w
+
+# Assign dns name
+$publicId=az network public-ip list --query "[?ipAddress!=null]|[?contains(ipAddress, '$IP')].[id]" --output tsv
+az network public-ip update --ids $publicId --dns-name $aksCluster
 
 # Cluster autoscale
 kubectl autoscale deployment k8app --cpu-percent=5 --min=1 --max=10
@@ -135,7 +139,8 @@ go get -u github.com/rakyll/hey
 $siteUrl='http://'+$svc.status.loadBalancer.ingress.ip
 hey -z 5m -c 100 $siteUrl
 
-
-
 # Remove resource group
 # az group delete --name $resourceGroup
+
+$publicId=az network public-ip list --query "[?ipAddress!=null]|[?contains(ipAddress, '$IP')].[id]" --output tsv
+az network public-ip update --ids $publicId --dns-name $aksCluster
